@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
 int main() {
     int totalUsers = 0;
     char users[100][100], cpfs[100][13], senhas[100][20];
