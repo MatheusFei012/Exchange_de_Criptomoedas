@@ -81,7 +81,7 @@ void menu_principal(int totalUsers, char users[][100], char cpfs[][13], char sen
                             sacar(&consaldo);
                             salvar_saldo(consaldo, bitcoin, ethereum, ripple, usuarioIndex);
                             break;
-case 5:
+                        case 5:
                             comprar_criptomoeda(&consaldo, &bitcoin, &ethereum, &ripple, usuarioIndex);
                             salvar_saldo(consaldo, bitcoin, ethereum, ripple, usuarioIndex);
                             break;
