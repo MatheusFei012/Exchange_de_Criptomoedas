@@ -3,6 +3,12 @@
 #include <string.h>
 #include <time.h>
 
+void atualizar_cotacao() {
+    printf("As cotações das criptomoedas foram atualizadas.\n");
+    pausar();
+    limpar_tela();
+}
+
 int main() {
     int totalUsers = 0;
     char users[100][100], cpfs[100][13], senhas[100][20];
