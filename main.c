@@ -82,6 +82,12 @@ void registrar(int *totalUsers, char users[][100], char cpfs[][13], char senhas[
     salvar_saldo(0.0, 0.0, 0.0, 0.0, *totalUsers - 1);
 
     printf("\nUsuário registrado com sucesso!\n");
+void saldo(float consaldo, float bitcoin, float ethereum, float ripple) {
+    limpar_tela();
+    printf("Saldo disponível: R$ %.2f\n", consaldo);
+    printf("Bitcoin: %.6f BTC\n", bitcoin);
+    printf("Ethereum: %.6f ETH\n", ethereum);
+    printf("Ripple: %.6f XRP\n", ripple);
     pausar();
     limpar_tela();
 }
