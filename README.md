@@ -30,4 +30,21 @@ login e operações bancárias, incluindo consulta de saldo, depósito, saque e 
 
 <h2> Compilação</h2>
 
+<li>Abra o terminal (ou o prompt de comando no Windows).</li>
+<li>Navegue até o diretório do projeto.</li>
+<li>Compile os arquivos fonte usando o GCC. </li>
+
+
+<h2>Como usar o programa</h2>
+
+
+Para usar o programa de troca de criptomoedas, inicie criando um registro com seu CPF e uma senha.
+Depois, faça login com essas credenciais. Você pode consultar seu saldo, realizar depósitos e saques,
+e comprar ou vender Bitcoin, Ethereum e Ripple.
+
+
+
+
+
+
 
