@@ -12,3 +12,19 @@ int main() {
 
     return 0;
 }
+void sacar(float consaldo) {
+    limpar_tela();
+    float valor;
+    printf("Digite o valor que deseja sacar: R$ ");
+    scanf("%f", &valor);
+    getchar(); // Limpa o buffer
+    if (valor <= 0 || valor >consaldo) {
+        printf("Valor inválido. O saque deve ser maior que zero e menor ou igual ao saldo.\n");
+        pausar();
+        return;
+    }
+    *consaldo -= valor;
+    printf("Saque de R$ %.2f realizado com sucesso!\n", valor);
+    pausar();
+    limpar_tela();
+}
