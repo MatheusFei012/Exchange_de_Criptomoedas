@@ -88,6 +88,8 @@ void saldo(float consaldo, float bitcoin, float ethereum, float ripple) {
     printf("Bitcoin: %.6f BTC\n", bitcoin);
     printf("Ethereum: %.6f ETH\n", ethereum);
     printf("Ripple: %.6f XRP\n", ripple);
+void atualizar_cotacao() {
+    printf("As cotações das criptomoedas foram atualizadas.\n");
     pausar();
     limpar_tela();
 }
