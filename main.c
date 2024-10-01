@@ -435,6 +435,19 @@ void sacar(float consaldo) {
     }
     *consaldo -= valor;
     printf("Saque de R$ %.2f realizado com sucesso!\n", valor);
+void depositar(float *consaldo) {
+    limpar_tela();
+    float valor;
+    printf("Digite o valor que deseja depositar: R$ ");
+    scanf("%f", &valor);
+    getchar(); // Limpa o buffer
+    if (valor <= 0) {
+        printf("Valor inválido. O depósito deve ser maior que zero.\n");
+        pausar();
+        return;
+    }
+    *consaldo += valor;
+    printf("Depósito de R$ %.2f realizado com sucesso!\n", valor);
     pausar();
     limpar_tela();
 }
