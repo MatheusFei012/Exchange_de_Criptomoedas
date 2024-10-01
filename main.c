@@ -153,7 +153,7 @@ int validar_cpf(const char *cpf) {
 }
 
 
-void carregarsaldo(float consaldo, floatbitcoin, float ethereum, floatripple, int usuarioIndex) {
+void carregar_saldo(float consaldo, floatbitcoin, float ethereum, floatripple, int usuarioIndex) {
     char filename[50];
     snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
     FILE file = fopen(filename, "rb");
@@ -168,7 +168,7 @@ void carregarsaldo(float consaldo, floatbitcoin, float ethereum, floatripple, in
     }
 }
 
-void salvarsaldo(float consaldo, float bitcoin, float ethereum, float ripple, int usuarioIndex) {
+void salvar_saldo(float consaldo, float bitcoin, float ethereum, float ripple, int usuarioIndex) {
     char filename[50];
     snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
     FILEfile = fopen(filename, "wb");
