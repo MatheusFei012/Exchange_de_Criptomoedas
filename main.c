@@ -31,7 +31,7 @@ void salvar_usuarios(int totalUsers, char users[][100], char cpfs[][13], char se
 
 void carregar_saldo(float *consaldo, float *bitcoin, float *ethereum, float *ripple, int usuarioIndex) {
     char filename[50];
-    snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
+    snprintf(filename, sizeof(filename), "saldo_%d.bin", usuarioIndex);
     FILE *file = fopen(filename, "rb");
     if (file) {
         fread(consaldo, sizeof(float), 1, file);
@@ -46,7 +46,7 @@ void carregar_saldo(float *consaldo, float *bitcoin, float *ethereum, float *rip
 
 void salvar_saldo(float consaldo, float bitcoin, float ethereum, float ripple, int usuarioIndex) {
     char filename[50];
-    snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
+    snprintf(filename, sizeof(filename), "saldo_%d.bin", usuarioIndex);
     FILE *file = fopen(filename, "wb");
     if (file) {
         fwrite(&consaldo, sizeof(float), 1, file);
@@ -58,9 +58,9 @@ void salvar_saldo(float consaldo, float bitcoin, float ethereum, float ripple, i
         printf("Erro ao salvar saldo.\n");
     }
 }
-void gravar_extrato(int usuarioIndex, const char tipo, const char moeda, float valor, float saldo_apos) {
+void gravar_extrato(int usuarioIndex, const char *tipo, const char *moeda, float valor, float saldo_apos) {
     char filename[50];
-    snprintf(filename, sizeof(filename), "extrato%d.bin", usuarioIndex);
+    snprintf(filename, sizeof(filename), "extrato_%d.bin", usuarioIndex);
 
     FILE *file = fopen(filename, "ab");
     if (file) {
@@ -83,7 +83,7 @@ void gravar_extrato(int usuarioIndex, const char tipo, const char moeda, float v
 
 void carregar_extrato(int usuarioIndex) {
     char filename[50];
-    snprintf(filename, sizeof(filename), "extrato%d.bin", usuarioIndex);
+    snprintf(filename, sizeof(filename), "extrato_%d.bin", usuarioIndex);
 
     FILE *file = fopen(filename, "rb");
     if (file) {
@@ -248,8 +248,6 @@ void depositar(float *consaldo) {
         pausar();
         return;
     }
-    *consaldo -= valor;
-    printf("Saque de R$ %.2f realizado com sucesso!\n", valor);
     *consaldo += valor;
     printf("Depósito de R$ %.2f realizado com sucesso!\n", valor);
     pausar();
@@ -383,7 +381,7 @@ void atualizar_cotacao() {
 }
 
 
-void menu_principal(int totalUsers, char users[][100], char cpfs[][13], char senhas[][20]) {
+void menu_principal(int *totalUsers, char users[][100], char cpfs[][13], char senhas[][20]) {
     while (1) {
         printf("Menu:\n");
         printf("1. Login\n");
@@ -397,7 +395,7 @@ void menu_principal(int totalUsers, char users[][100], char cpfs[][13], char sen
 
         switch (opcao) {
             case 1: {
-                int usuarioIndex = login(totalUsers, users, cpfs, senhas);
+                int usuarioIndex = login(*totalUsers, users, cpfs, senhas);
                 if (usuarioIndex < 0) {
                     continue;
                 }
