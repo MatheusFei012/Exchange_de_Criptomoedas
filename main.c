@@ -5,19 +5,16 @@
 
 void carregar_usuarios(int *totalUsers, char users[][100], char cpfs[][13], char senhas[][20]){
     FILE *file = fopen("usuarios.bin", "rb");
-    if(file){
+    if (file){
         fread(totalUsers, sizeof(int), 1, file);
         fread(users, sizeof(char[100]), *totalUsers, file);
         fread(cpfs, sizeof(char[13]), *totalUsers, file);
         fread(senhas, sizeof(char[20]), *totalUsers, file);
         fclose(file);
-    }
-    else{
+    } else{
         printf("Erro ao abrir o arquivo de usuários.\n");
     }
 }
-
-
 
 void salvar_usuarios(int totalUsers, char users[][100], char cpfs[][13], char senhas[][20]) {
     FILE *file = fopen("usuarios.bin", "wb");
@@ -31,6 +28,106 @@ void salvar_usuarios(int totalUsers, char users[][100], char cpfs[][13], char se
         printf("Erro ao salvar usuários.\n");
     }
 }
+
+void carregar_saldo(float *consaldo, float *bitcoin, float *ethereum, float *ripple, int usuarioIndex) {
+    char filename[50];
+    snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
+    FILE *file = fopen(filename, "rb");
+    if (file) {
+        fread(consaldo, sizeof(float), 1, file);
+        fread(bitcoin, sizeof(float), 1, file);
+        fread(ethereum, sizeof(float), 1, file);
+        fread(ripple, sizeof(float), 1, file);
+        fclose(file);
+    } else {
+        printf("Erro ao abrir o arquivo de saldo.\n");
+    }
+}
+
+void salvar_saldo(float consaldo, float bitcoin, float ethereum, float ripple, int usuarioIndex) {
+    char filename[50];
+    snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
+    FILE *file = fopen(filename, "wb");
+    if (file) {
+        fwrite(&consaldo, sizeof(float), 1, file);
+        fwrite(&bitcoin, sizeof(float), 1, file);
+        fwrite(&ethereum, sizeof(float), 1, file);
+        fwrite(&ripple, sizeof(float), 1, file);
+        fclose(file);
+    } else {
+        printf("Erro ao salvar saldo.\n");
+    }
+}
+void gravar_extrato(int usuarioIndex, const char tipo, const char moeda, float valor, float saldo_apos) {
+    char filename[50];
+    snprintf(filename, sizeof(filename), "extrato%d.bin", usuarioIndex);
+
+    FILE *file = fopen(filename, "ab");
+    if (file) {
+        char data_hora[30];
+        time_t t = time(NULL);
+        struct tm *tm_info = localtime(&t);
+        strftime(data_hora, sizeof(data_hora), "%Y-%m-%d %H:%M:%S", tm_info);
+
+        fwrite(data_hora, sizeof(char[30]), 1, file);
+        fwrite(tipo, sizeof(char[50]), 1, file);
+        fwrite(moeda, sizeof(char[20]), 1, file);
+        fwrite(&valor, sizeof(float), 1, file);
+        fwrite(&saldo_apos, sizeof(float), 1, file);
+
+        fclose(file);
+    } else {
+        printf("Erro ao gravar extrato.\n");
+    }
+}
+
+void carregar_extrato(int usuarioIndex) {
+    char filename[50];
+    snprintf(filename, sizeof(filename), "extrato%d.bin", usuarioIndex);
+
+    FILE *file = fopen(filename, "rb");
+    if (file) {
+        char data_hora[30], tipo[50], moeda[20];
+        float valor, saldo_apos;
+        int found = 0;
+
+        printf("\nExtrato de transações:\n");
+        printf("------------------------------------------------------------\n");
+        printf("%-20s | %-10s | %-10s | %-10s | %-10s\n", "Data/Hora", "Tipo", "Moeda", "Valor", "Saldo Após");
+        printf("------------------------------------------------------------\n");
+
+        while (fread(data_hora, sizeof(char[30]), 1, file) &&
+               fread(tipo, sizeof(char[50]), 1, file) &&
+               fread(moeda, sizeof(char[20]), 1, file) &&
+               fread(&valor, sizeof(float), 1, file) &&
+               fread(&saldo_apos, sizeof(float), 1, file)) {
+            printf("%-20s | %-10s | %-10s | %-10.2f | %-10.2f\n", data_hora, tipo, moeda, valor, saldo_apos);
+            found = 1;
+        }
+
+        if (!found) {
+            printf("Nenhuma transação realizada até o momento.\n");
+        }
+
+        printf("------------------------------------------------------------\n");
+        fclose(file);
+    } else {
+        printf("Erro ao abrir o arquivo de extrato.\n");
+    }
+}
+
+void limpar_tela() {
+    system("cls || clear");
+}
+
+void pausar() {
+    printf("\nPressione Enter para continuar...");
+    getchar();
+}
+
+int validar_cpf(const char *cpf) {
+      return strlen(cpf) == 11 && strspn(cpf, "0123456789") == 11;
+    }
 
 void registrar(int *totalUsers, char users[][100], char cpfs[][13], char senhas[][20]) {
     limpar_tela();
@@ -82,19 +179,9 @@ void registrar(int *totalUsers, char users[][100], char cpfs[][13], char senhas[
     salvar_saldo(0.0, 0.0, 0.0, 0.0, *totalUsers - 1);
 
     printf("\nUsuário registrado com sucesso!\n");
-void saldo(float consaldo, float bitcoin, float ethereum, float ripple) {
-    limpar_tela();
-    printf("Saldo disponível: R$ %.2f\n", consaldo);
-    printf("Bitcoin: %.6f BTC\n", bitcoin);
-    printf("Ethereum: %.6f ETH\n", ethereum);
-    printf("Ripple: %.6f XRP\n", ripple);
-void atualizar_cotacao() {
-    printf("As cotações das criptomoedas foram atualizadas.\n");
     pausar();
     limpar_tela();
-}
-
-
+ }
 int login(int totalUsers, char users[][100], char cpfs[][13], char senhas[][20]) {
     limpar_tela();
     char cpf[13], senha[20];
@@ -127,6 +214,7 @@ int login(int totalUsers, char users[][100], char cpfs[][13], char senhas[][20])
     limpar_tela();
     return -1;
 }
+
 void menu() {
     printf("1. Consultar saldo\n");
     printf("2. Consultar extrato\n");
@@ -139,104 +227,53 @@ void menu() {
     printf("\nEscolha uma opção: ");
 }
 
-void limpar_tela() {
-    system("cls || clear");
-}
-
-void pausar() {
-    printf("\nPressione Enter para continuar...");
-    getchar();
-}
-
-int validar_cpf(const char *cpf) {
-    return strlen(cpf) == 11 && strspn(cpf, "0123456789") == 11;
-}
-
-
-void carregar_saldo(float consaldo, floatbitcoin, float ethereum, floatripple, int usuarioIndex) {
-    char filename[50];
-    snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
-    FILE file = fopen(filename, "rb");
-    if (file) {
-        fread(consaldo, sizeof(float), 1, file);
-        fread(bitcoin, sizeof(float), 1, file);
-        fread(ethereum, sizeof(float), 1, file);
-        fread(ripple, sizeof(float), 1, file);
-        fclose(file);
-    } else {
-        printf("Erro ao abrir o arquivo de saldo.\n");
-    }
-}
-
-void salvar_saldo(float consaldo, float bitcoin, float ethereum, float ripple, int usuarioIndex) {
-    char filename[50];
-    snprintf(filename, sizeof(filename), "saldo%d.bin", usuarioIndex);
-    FILEfile = fopen(filename, "wb");
-    if (file) {
-        fwrite(&consaldo, sizeof(float), 1, file);
-        fwrite(&bitcoin, sizeof(float), 1, file);
-        fwrite(&ethereum, sizeof(float), 1, file);
-        fwrite(&ripple, sizeof(float), 1, file);
-        fclose(file);
-    } else {
-        printf("Erro ao salvar saldo.\n");
-    }
-void vender_criptomoeda(float consaldo, floatbitcoin, float ethereum, floatripple, int usuarioIndex) {
+void saldo(float consaldo, float bitcoin, float ethereum, float ripple) {
     limpar_tela();
-    int opcao;
-    float valor;
-    printf("Escolha uma criptomoeda para vender:\n");
-    printf("1. Bitcoin (BTC)\n");
-    printf("2. Ethereum (ETH)\n");
-    printf("3. Ripple (XRP)\n");
-    printf("Escolha uma opção: ");
-    scanf("%d", &opcao);
-    getchar(); // Limpa o buffer
-
-    printf("Digite o valor que deseja vender: ");
-    scanf("%f", &valor);
-    getchar(); // Limpa o buffer
-
-    switch (opcao) {
-        case 1:
-            if (valor > *bitcoin) {
-                printf("Saldo insuficiente de Bitcoin para a venda.\n");
-                pausar();
-                return;
-            }
-            bitcoin -= valor; // Aqui deve ser feita a conversão para R$
-            gravar_extrato(usuarioIndex, "Venda", "Bitcoin", valor,consaldo);
-            break;
-        case 2:
-            if (valor > *ethereum) {
-                printf("Saldo insuficiente de Ethereum para a venda.\n");
-                pausar();
-                return;
-            }
-            ethereum -= valor; // Aqui deve ser feita a conversão para R$
-            gravar_extrato(usuarioIndex, "Venda", "Ethereum", valor,consaldo);
-            break;
-        case 3:
-            if (valor > *ripple) {
-                printf("Saldo insuficiente de Ripple para a venda.\n");
-                pausar();
-                return;
-            }
-            ripple -= valor; // Aqui deve ser feita a conversão para R$
-            gravar_extrato(usuarioIndex, "Venda", "Ripple", valor,consaldo);
-            break;
-        default:
-            printf("Opção inválida.\n");
-            pausar();
-            return;
-    }
-
-    *consaldo += valor; // Aqui deve ser feito o depósito do valor da venda em Reais
-    printf("Venda realizada com sucesso!\n");
+    printf("Saldo disponível: R$ %.2f\n", consaldo);
+    printf("Bitcoin: %.6f BTC\n", bitcoin);
+    printf("Ethereum: %.6f ETH\n", ethereum);
+    printf("Ripple: %.6f XRP\n", ripple);
     pausar();
     limpar_tela();
 }
-void comprar_criptomoeda(float consaldo, floatbitcoin, float ethereum, floatripple, int usuarioIndex) {
+
+void depositar(float *consaldo) {
+    limpar_tela();
+    float valor;
+    printf("Digite o valor que deseja depositar: R$ ");
+    scanf("%f", &valor);
+    getchar(); // Limpa o buffer
+    if (valor <= 0) {
+        printf("Valor inválido. O depósito deve ser maior que zero.\n");
+        pausar();
+        return;
+    }
+    *consaldo -= valor;
+    printf("Saque de R$ %.2f realizado com sucesso!\n", valor);
+    *consaldo += valor;
+    printf("Depósito de R$ %.2f realizado com sucesso!\n", valor);
+    pausar();
+    limpar_tela();
+}
+
+void sacar(float *consaldo) {
+    limpar_tela();
+    float valor;
+    printf("Digite o valor que deseja sacar: R$ ");
+    scanf("%f", &valor);
+    getchar(); // Limpa o buffer
+    if (valor <= 0 || valor > *consaldo) {
+        printf("Valor inválido. O saque deve ser maior que zero e menor ou igual ao saldo.\n");
+        pausar();
+        return;
+    }
+    *consaldo -= valor;
+      printf("Saque de R$ %.2f realizado com sucesso!\n", valor);
+      pausar();
+      limpar_tela();
+    }
+    
+void comprar_criptomoeda(float *consaldo, float *bitcoin, float *ethereum, float *ripple, int usuarioIndex) {
     limpar_tela();
     int opcao;
     float valor;
@@ -260,16 +297,16 @@ void comprar_criptomoeda(float consaldo, floatbitcoin, float ethereum, floatripp
 
     switch (opcao) {
         case 1:
-            bitcoin += valor; // Aqui deve ser feita a conversão para BTC
-            gravar_extrato(usuarioIndex, "Compra", "Bitcoin", valor,consaldo);
+            *bitcoin += valor; // Aqui deve ser feita a conversão para BTC
+            gravar_extrato(usuarioIndex, "Compra", "Bitcoin", valor,*consaldo);
             break;
         case 2:
-            ethereum += valor; // Aqui deve ser feita a conversão para ETH
-            gravar_extrato(usuarioIndex, "Compra", "Ethereum", valor,consaldo);
+            *ethereum += valor; // Aqui deve ser feita a conversão para ETH
+            gravar_extrato(usuarioIndex, "Compra", "Ethereum", valor,*consaldo);
             break;
         case 3:
-            ripple += valor; // Aqui deve ser feita a conversão para XRP
-            gravar_extrato(usuarioIndex, "Compra", "Ripple", valor,consaldo);
+            *ripple += valor; // Aqui deve ser feita a conversão para XRP
+            gravar_extrato(usuarioIndex, "Compra", "Ripple", valor,*consaldo);
             break;
         default:
             printf("Opção inválida.\n");
@@ -283,15 +320,68 @@ void comprar_criptomoeda(float consaldo, floatbitcoin, float ethereum, floatripp
     limpar_tela();
 }
 
-int main() {
-    int totalUsers = 0;
-    char users[100][100], cpfs[100][13], senhas[100][20];
+void vender_criptomoeda(float *consaldo, float *bitcoin, float *ethereum, float *ripple, int usuarioIndex) {
+    limpar_tela();
+    int opcao;
+    float valor;
+    printf("Escolha uma criptomoeda para vender:\n");
+    printf("1. Bitcoin (BTC)\n");
+    printf("2. Ethereum (ETH)\n");
+    printf("3. Ripple (XRP)\n");
+    printf("Escolha uma opção: ");
+    scanf("%d", &opcao);
+    getchar(); // Limpa o buffer
 
-    carregar_usuarios(&totalUsers, users, cpfs, senhas);
-    menu_principal(&totalUsers, users, cpfs, senhas);
+    printf("Digite o valor que deseja vender: ");
+    scanf("%f", &valor);
+    getchar(); // Limpa o buffer
 
-    return 0;
+    switch (opcao) {
+        case 1:
+            if (valor > *bitcoin) {
+                printf("Saldo insuficiente de Bitcoin para a venda.\n");
+                pausar();
+                return;
+            }
+            *bitcoin -= valor; // Aqui deve ser feita a conversão para R$
+            gravar_extrato(usuarioIndex, "Venda", "Bitcoin", valor,*consaldo);
+            break;
+        case 2:
+            if (valor > *ethereum) {
+                printf("Saldo insuficiente de Ethereum para a venda.\n");
+                pausar();
+                return;
+            }
+            *ethereum -= valor; // Aqui deve ser feita a conversão para R$
+            gravar_extrato(usuarioIndex, "Venda", "Ethereum", valor, *consaldo);
+            break;
+        case 3:
+            if (valor > *ripple) {
+                printf("Saldo insuficiente de Ripple para a venda.\n");
+                pausar();
+                return;
+            }
+            *ripple -= valor; // Aqui deve ser feita a conversão para R$
+            gravar_extrato(usuarioIndex, "Venda", "Ripple", valor,*consaldo);
+            break;
+        default:
+            printf("Opção inválida.\n");
+            pausar();
+            return;
+    }
+
+    *consaldo += valor; // Aqui deve ser feito o depósito do valor da venda em Reais
+    printf("Venda realizada com sucesso!\n");
+    pausar();
+    limpar_tela();
 }
+
+void atualizar_cotacao() {
+    printf("As cotações das criptomoedas foram atualizadas.\n");
+    pausar();
+    limpar_tela();
+}
+
 
 void menu_principal(int totalUsers, char users[][100], char cpfs[][13], char senhas[][20]) {
     while (1) {
@@ -369,85 +459,13 @@ void menu_principal(int totalUsers, char users[][100], char cpfs[][13], char sen
                 break;
         }
     }
-void gravarextrato(int usuarioIndex, const char tipo, const charmoeda, float valor, float saldo_apos) {
-    char filename[50];
-    snprintf(filename, sizeof(filename), "extrato%d.bin", usuarioIndex);
+}
+int main() {
+    int totalUsers = 0;
+    char users[100][100], cpfs[100][13], senhas[100][20];
 
-    FILE file = fopen(filename, "ab");
-    if (file) {
-        char data_hora[30];
-        time_t t = time(NULL);
-        struct tmtm_info = localtime(&t);
-        strftime(data_hora, sizeof(data_hora), "%Y-%m-%d %H:%M:%S", tm_info);
+    carregar_usuarios(&totalUsers, users, cpfs, senhas);
+    menu_principal(&totalUsers, users, cpfs, senhas);
 
-        fwrite(data_hora, sizeof(char[30]), 1, file);
-        fwrite(tipo, sizeof(char[50]), 1, file);
-        fwrite(moeda, sizeof(char[20]), 1, file);
-        fwrite(&valor, sizeof(float), 1, file);
-        fwrite(&saldo_apos, sizeof(float), 1, file);
-
-        fclose(file);
-    } else {
-        printf("Erro ao gravar extrato.\n");
-void carregarextrato(int usuarioIndex) {
-    char filename[50];
-    snprintf(filename, sizeof(filename), "extrato%d.bin", usuarioIndex);
-
-    FILE *file = fopen(filename, "rb");
-    if (file) {
-        char data_hora[30], tipo[50], moeda[20];
-        float valor, saldo_apos;
-        int found = 0;
-
-        printf("\nExtrato de transações:\n");
-        printf("------------------------------------------------------------\n");
-        printf("%-20s | %-10s | %-10s | %-10s | %-10s\n", "Data/Hora", "Tipo", "Moeda", "Valor", "Saldo Após");
-        printf("------------------------------------------------------------\n");
-
-        while (fread(data_hora, sizeof(char[30]), 1, file) &&
-               fread(tipo, sizeof(char[50]), 1, file) &&
-               fread(moeda, sizeof(char[20]), 1, file) &&
-               fread(&valor, sizeof(float), 1, file) &&
-               fread(&saldo_apos, sizeof(float), 1, file)) {
-            printf("%-20s | %-10s | %-10s | %-10.2f | %-10.2f\n", data_hora, tipo, moeda, valor, saldo_apos);
-            found = 1;
-        }
-
-        if (!found) {
-            printf("Nenhuma transação realizada até o momento.\n");
-        }
-
-        printf("------------------------------------------------------------\n");
-        fclose(file);
-    } else {
-        printf("Erro ao abrir o arquivo de extrato.\n");
-    }
-void sacar(float consaldo) {
-    limpar_tela();
-    float valor;
-    printf("Digite o valor que deseja sacar: R$ ");
-    scanf("%f", &valor);
-    getchar(); // Limpa o buffer
-    if (valor <= 0 || valor >consaldo) {
-        printf("Valor inválido. O saque deve ser maior que zero e menor ou igual ao saldo.\n");
-        pausar();
-        return;
-    }
-    *consaldo -= valor;
-    printf("Saque de R$ %.2f realizado com sucesso!\n", valor);
-void depositar(float *consaldo) {
-    limpar_tela();
-    float valor;
-    printf("Digite o valor que deseja depositar: R$ ");
-    scanf("%f", &valor);
-    getchar(); // Limpa o buffer
-    if (valor <= 0) {
-        printf("Valor inválido. O depósito deve ser maior que zero.\n");
-        pausar();
-        return;
-    }
-    *consaldo += valor;
-    printf("Depósito de R$ %.2f realizado com sucesso!\n", valor);
-    pausar();
-    limpar_tela();
+    return 0;
 }
