@@ -117,4 +117,89 @@ void cadastrar_investidor() {
     printf("Investidor cadastrado com sucesso!\n");
     pausar();
 }
+void excluir_investidor() {
+    FILE *file = fopen("usuarios.bin", "rb+");
+    if (!file) {
+        printf("Erro ao abrir o arquivo de usuários.\n");
+        return;
+    }
 
+    Investidor investidor;
+    char cpf[13];
+    int found = 0;
+    long position;
+
+    printf("Digite o CPF do investidor a ser excluído: ");
+    fgets(cpf, sizeof(cpf), stdin);
+    strtok(cpf, "\n");
+
+    // Procurar o investidor no arquivo
+    while ((position = ftell(file)) != -1 && fread(&investidor, sizeof(Investidor), 1, file)) {
+        if (strcmp(investidor.cpf, cpf) == 0) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("Investidor não encontrado.\n");
+        fclose(file);
+        return;
+    }
+
+    // Confirmar a exclusão
+    char confirmacao;
+    printf("Tem certeza de que deseja excluir o investidor %s (CPF: %s)? [S/N]: ", investidor.nome, investidor.cpf);
+    scanf(" %c", &confirmacao);
+    getchar();  // Limpar o buffer
+
+    if (confirmacao != 'S' && confirmacao != 's') {
+        printf("Exclusão cancelada.\n");
+        fclose(file);
+        return;
+    }
+
+    // Criar arquivo temporário para regravar os dados sem o investidor excluído
+    FILE *tempFile = fopen("temp.bin", "wb");
+    if (!tempFile) {
+        printf("Erro ao criar arquivo temporário.\n");
+        fclose(file);
+        return;
+    }
+
+    fseek(file, 0, SEEK_SET);  // Voltar para o início do arquivo
+    while (fread(&investidor, sizeof(Investidor), 1, file)) {
+        if (strcmp(investidor.cpf, cpf) != 0) {
+            fwrite(&investidor, sizeof(Investidor), 1, tempFile);
+        }
+    }
+
+    fclose(file);
+    fclose(tempFile);
+
+    // Excluir o arquivo original e renomear o arquivo temporário
+    remove("usuarios.bin");
+    rename("temp.bin", "usuarios.bin");
+
+    // Agora, vamos excluir os arquivos de saldo e extrato do investidor
+    char saldo_file[50], extrato_file[50];
+    sprintf(saldo_file, "saldo_%s.bin", cpf);
+    sprintf(extrato_file, "extrato_%s.bin", cpf);
+
+    // Excluir o arquivo de saldo, se existir
+    if (remove(saldo_file) == 0) {
+        printf("Arquivo de saldo excluído.\n");
+    } else {
+        printf("Erro ao excluir o arquivo de saldo ou ele não existe.\n");
+    }
+
+    // Excluir o arquivo de extrato, se existir
+    if (remove(extrato_file) == 0) {
+        printf("Arquivo de extrato excluído.\n");
+    } else {
+        printf("Erro ao excluir o arquivo de extrato ou ele não existe.\n");
+    }
+
+    printf("Investidor e seus dados (saldo e extrato) excluídos com sucesso!\n");
+    pausar();
+}
