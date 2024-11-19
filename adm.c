@@ -239,3 +239,45 @@ void carregar_extrato(int usuarioIndex) {
 
     pausar();  // Pausa para o usuário visualizar antes de sair
 }
+void consultar_saldo_investidor() {
+    char cpf[13];
+    int found = 0;
+    Investidor investidor;
+
+    printf("Digite o CPF do investidor: ");
+    fgets(cpf, sizeof(cpf), stdin);
+    strtok(cpf, "\n");
+
+    FILE *file = fopen("usuarios.bin", "rb");
+    if (!file) {
+        printf("Erro ao abrir o arquivo de usuários.\n");
+        return;
+    }
+
+    while (fread(&investidor, sizeof(Investidor), 1, file)) {
+        if (strcmp(investidor.cpf, cpf) == 0) {
+            found = 1;
+            // Se encontrado, consultar o saldo
+            char saldo_file[50];
+            sprintf(saldo_file, "saldo_%s.bin", investidor.cpf);
+
+            FILE *saldoFile = fopen(saldo_file, "rb");
+            if (saldoFile) {
+                float saldo;
+                fread(&saldo, sizeof(float), 1, saldoFile);
+                printf("Saldo do investidor %s (CPF: %s): %.2f\n", investidor.nome, investidor.cpf, saldo);
+                fclose(saldoFile);  // Fechar o arquivo de saldo
+            } else {
+                printf("Erro ao ler o arquivo de saldo.\n");
+            }
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("Investidor não encontrado.\n");
+    }
+
+    fclose(file);  // Fechar o arquivo de usuários
+    pausar();
+}
