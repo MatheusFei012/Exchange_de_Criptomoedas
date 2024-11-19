@@ -421,3 +421,52 @@ void excluir_criptomoeda() {
   pausar();
   fclose(file);
 }
+
+void atualizar_cotacao_criptomoeda() {
+  FILE *file = fopen("criptomoedas.bin", "rb+");
+  if (!file) {
+    printf("Erro ao abrir o arquivo de criptomoedas.\n");
+    return;
+  }
+
+  Criptomoeda moeda;
+  char nome[100];
+  int found = 0;
+
+  printf("Digite o nome da criptomoeda a ser atualizada: ");
+  fgets(nome, sizeof(nome), stdin);
+  strtok(nome, "\n");
+
+  while (fread(&moeda, sizeof(Criptomoeda), 1, file)) {
+    if (strcmp(moeda.nome, nome) == 0) {
+      printf("Criptomoeda encontrada: %s\n", moeda.nome);
+      printf("Cotação inicial: %.2f\n", moeda.cotacao_inicial);
+      printf("Taxa de compra: %.2f\n", moeda.taxa_compra);
+      printf("Taxa de venda: %.2f\n", moeda.taxa_venda);
+
+      printf("Digite a nova cotação inicial: ");
+      scanf("%f", &moeda.cotacao_inicial);
+
+      printf("Digite a nova taxa de compra: ");
+      scanf("%f", &moeda.taxa_compra);
+
+      printf("Digite a nova taxa de venda: ");
+      scanf("%f", &moeda.taxa_venda);
+
+      fseek(file, -sizeof(Criptomoeda),
+            SEEK_CUR); 
+      fwrite(&moeda, sizeof(Criptomoeda), 1, file);
+      printf("Criptomoeda atualizada com sucesso!\n");
+
+      found = 1;
+      break;
+    }
+  }
+
+  if (!found) {
+    printf("Criptomoeda não encontrada.\n");
+  }
+
+  pausar();
+  fclose(file);
+}
