@@ -323,3 +323,101 @@ void consultar_extrato_investidor() {
     fclose(file);  // Fechar o arquivo de usuários
     pausar();
 }
+
+void cadastrar_criptomoeda() {
+  FILE *file = fopen("criptomoedas.bin", "ab");
+  if (!file) {
+    printf("Erro ao abrir o arquivo de criptomoedas.\n");
+    return;
+  }
+
+  Criptomoeda moeda;
+  printf("Digite o nome da criptomoeda: ");
+  fgets(moeda.nome, sizeof(moeda.nome), stdin);
+  strtok(moeda.nome, "\n");
+
+  printf("Digite a cotação inicial da criptomoeda: ");
+  scanf("%f", &moeda.cotacao_inicial);
+
+  printf("Digite a taxa de compra da criptomoeda: ");
+  scanf("%f", &moeda.taxa_compra);
+
+  printf("Digite a taxa de venda da criptomoeda: ");
+  scanf("%f", &moeda.taxa_venda);
+  getchar(); // Limpar o buffer
+
+  fwrite(&moeda, sizeof(Criptomoeda), 1, file);
+  printf("Criptomoeda cadastrada com sucesso!\n");
+
+  pausar();
+  fclose(file);
+}
+
+
+void excluir_criptomoeda() {
+  FILE *file = fopen("criptomoedas.bin", "rb+");
+  if (!file) {
+    printf("Erro ao abrir o arquivo de criptomoedas.\n");
+    return;
+  }
+
+  Criptomoeda moeda;
+  char nome[100];
+  int found = 0;
+
+  printf("Digite o nome da criptomoeda a ser excluída: ");
+  fgets(nome, sizeof(nome), stdin);
+  strtok(nome, "\n");
+
+  while (fread(&moeda, sizeof(Criptomoeda), 1, file)) {
+    if (strcmp(moeda.nome, nome) == 0) {
+      printf("Criptomoeda encontrada: %s\n", moeda.nome);
+      printf("Cotação inicial: %.2f\n", moeda.cotacao_inicial);
+      printf("Taxa de compra: %.2f\n", moeda.taxa_compra);
+      printf("Taxa de venda: %.2f\n", moeda.taxa_venda);
+
+      
+      char confirmacao;
+      printf("Tem certeza que deseja excluir essa criptomoeda? [S/N]: ");
+      scanf(" %c", &confirmacao);
+      getchar(); 
+
+      if (confirmacao == 'S' || confirmacao == 's') {
+        
+        FILE *temp = fopen("temp.bin", "wb");
+        if (!temp) {
+          printf("Erro ao criar arquivo temporário.\n");
+          fclose(file);
+          return;
+        }
+
+        rewind(file);
+        while (fread(&moeda, sizeof(Criptomoeda), 1, file)) {
+          if (strcmp(moeda.nome, nome) != 0) {
+            fwrite(&moeda, sizeof(Criptomoeda), 1, temp);
+          }
+        }
+
+        fclose(file);
+        fclose(temp);
+
+        remove("criptomoedas.bin");
+        rename("temp.bin", "criptomoedas.bin");
+
+        printf("Criptomoeda excluída com sucesso!\n");
+      } else {
+        printf("Exclusão cancelada.\n");
+      }
+
+      found = 1;
+      break;
+    }
+  }
+
+  if (!found) {
+    printf("Criptomoeda não encontrada.\n");
+  }
+
+  pausar();
+  fclose(file);
+}
