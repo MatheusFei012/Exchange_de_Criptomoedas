@@ -62,3 +62,59 @@ typedef struct {
     char senha[20];
 } Investidor;
 
+// Função para cadastrar um investidor
+void cadastrar_investidor() {
+    Investidor novo_investidor;
+
+    printf("Digite o nome do investidor: ");
+    fgets(novo_investidor.nome, sizeof(novo_investidor.nome), stdin);
+    strtok(novo_investidor.nome, "\n");  // Remover o caractere de nova linha
+
+    printf("Digite o CPF do investidor: ");
+    fgets(novo_investidor.cpf, sizeof(novo_investidor.cpf), stdin);
+    strtok(novo_investidor.cpf, "\n");
+
+    printf("Digite a senha do investidor: ");
+    fgets(novo_investidor.senha, sizeof(novo_investidor.senha), stdin);
+    strtok(novo_investidor.senha, "\n");
+
+    // Abre o arquivo de usuários para adicionar o novo investidor
+    FILE *file = fopen("usuarios.bin", "ab"); // Abertura para adicionar no final
+    if (!file) {
+        printf("Erro ao abrir o arquivo de usuários.\n");
+        return;
+    }
+
+    fwrite(&novo_investidor, sizeof(Investidor), 1, file);
+    fclose(file);
+
+    // Criar arquivo de saldo com valor inicial de 0.0
+    char saldo_file[50];
+    sprintf(saldo_file, "saldo_%s.bin", novo_investidor.cpf);
+    FILE *saldo = fopen(saldo_file, "wb");
+    if (saldo) {
+        float saldo_inicial = 0.0;
+        fwrite(&saldo_inicial, sizeof(float), 1, saldo);
+        fclose(saldo);
+        printf("Arquivo de saldo criado com sucesso.\n");
+    } else {
+        printf("Erro ao criar o arquivo de saldo.\n");
+    }
+
+    // Criar arquivo de extrato vazio ou com texto inicial
+    char extrato_file[50];
+    sprintf(extrato_file, "extrato_%s.bin", novo_investidor.cpf);
+    FILE *extrato = fopen(extrato_file, "wb");
+    if (extrato) {
+        char texto_inicial[500] = "Nenhuma transação realizada até o momento.\n";
+        fwrite(texto_inicial, sizeof(char), strlen(texto_inicial) + 1, extrato);
+        fclose(extrato);
+        printf("Arquivo de extrato criado com sucesso.\n");
+    } else {
+        printf("Erro ao criar o arquivo de extrato.\n");
+    }
+
+    printf("Investidor cadastrado com sucesso!\n");
+    pausar();
+}
+
