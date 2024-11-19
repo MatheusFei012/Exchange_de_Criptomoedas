@@ -470,3 +470,59 @@ void atualizar_cotacao_criptomoeda() {
   pausar();
   fclose(file);
 }
+
+int main() {
+  if (!login_administrador()) {
+    return 0; 
+  }
+
+  int opcao;
+  do {
+    limpar_tela();
+    printf("=== Menu do Administrador ===\n");
+    printf("1. Cadastrar Investidor\n");
+    printf("2. Excluir Investidor\n");
+    printf("3. Consultar Saldo de um Investidor\n");
+    printf("4. Consultar Extrato de um Investidor\n");
+    printf("5. Cadastrar Criptomoeda\n");
+    printf("6. Excluir Criptomoeda\n");
+    printf("7. Atualizar Cotação de Criptomoeda\n");
+    printf("0. Sair\n");
+    printf("Escolha uma opção: ");
+    scanf("%d", &opcao);
+    getchar();
+
+    switch (opcao) {
+    case 1:
+      cadastrar_investidor();
+      break;
+    case 2:
+      excluir_investidor();
+      break;
+    case 3:
+      consultar_saldo_investidor();
+      break;
+    case 4:
+      consultar_extrato_investidor();
+      break;
+    case 5:
+      cadastrar_criptomoeda();
+      break;
+    case 6:
+      excluir_criptomoeda();
+      break;
+    case 7:
+      atualizar_cotacao_criptomoeda();
+      break;
+    case 0:
+      printf("Saindo...\n");
+      break;
+    default:
+      printf("Opção inválida.\n");
+      pausar();
+      break;
+    }
+  } while (opcao != 0);
+
+  return 0;
+}
